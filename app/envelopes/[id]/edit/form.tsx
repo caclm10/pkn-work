@@ -7,11 +7,11 @@ import { startTransition, useActionState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { createEnvelope } from "@/app/envelopes/create/action";
+import { updateEnvelope } from "@/app/envelopes/[id]/edit/action";
 import {
-	createEnvelopeFormSchema,
-	type CreateEnvelopeFormSchema,
-} from "@/app/envelopes/create/schema";
+	editEnvelopeFormSchema,
+	type EditEnvelopeFormSchema,
+} from "@/app/envelopes/[id]/edit/schema";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -37,30 +37,40 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 
-function CreateEnvelopeForm() {
+interface EditEnvelopeFormProps {
+	id: string;
+	currentValues: EditEnvelopeFormSchema;
+}
+
+function EditEnvelopeForm({ id, currentValues }: EditEnvelopeFormProps) {
 	const router = useRouter();
 
-	const form = useForm<CreateEnvelopeFormSchema>({
-		resolver: zodResolver(createEnvelopeFormSchema),
+	const form = useForm<EditEnvelopeFormSchema>({
+		resolver: zodResolver(editEnvelopeFormSchema),
 		defaultValues: {
-			name: "",
-			box: "",
+			name: currentValues.name,
+			box: currentValues.box,
 		},
 	});
 
-	const [state, action, pending] = useActionState(createEnvelope, {
+	const [state, action, pending] = useActionState(updateEnvelope, {
 		success: false,
+		returned: false,
 		timestamp: new Date().getTime(),
 	});
 
-	async function onSubmit(values: CreateEnvelopeFormSchema) {
-		startTransition(() => action(values));
+	async function onSubmit(values: EditEnvelopeFormSchema) {
+		startTransition(() => action({ id, values }));
 	}
 
 	useEffect(() => {
+		form.setValue("date", currentValues.date);
+	}, []);
+
+	useEffect(() => {
 		if (state.success) {
-			toast.success("Amplop baru berhasil ditambahkan.");
-			router.push("/");
+			router.push(`/envelopes/${id}`);
+			toast.success("Amplop berhasil diperbarui.");
 		}
 	}, [state]);
 
@@ -69,10 +79,10 @@ function CreateEnvelopeForm() {
 			<form onSubmit={form.handleSubmit(onSubmit)}>
 				<Card>
 					<CardHeader>
-						<CardTitle>Tambah Amplop</CardTitle>
+						<CardTitle>Edit Amplop</CardTitle>
 
 						<CardDescription>
-							Isi form di bawah ini untuk menambahkan amplop.
+							Isi form di bawah ini untuk memperbarui amplop.
 						</CardDescription>
 
 						<CardAction>
@@ -168,4 +178,4 @@ function CreateEnvelopeForm() {
 	);
 }
 
-export { CreateEnvelopeForm };
+export { EditEnvelopeForm };

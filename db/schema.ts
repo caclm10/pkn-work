@@ -8,11 +8,11 @@ const Envelope = table("envelopes", {
 		.primaryKey()
 		.$default(() => nanoid()),
 
-	name: t.text(),
+	name: t.text().notNull(),
 
-	box: t.text(),
+	box: t.text().notNull(),
 
-	date: t.integer({ mode: "timestamp" }),
+	date: t.integer({ mode: "timestamp" }).notNull(),
 
 	createdAt: t
 		.integer("created_at", { mode: "timestamp" })
